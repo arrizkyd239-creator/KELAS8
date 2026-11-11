@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KELAS 8.1</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Arial,sans-serif;background:#0b1424;color:white}
+header{text-align:center;padding:25px 15px;background:linear-gradient(135deg,#142b49,#087caa)}
+header h1{font-size:30px;letter-spacing:2px}
+header p{margin-top:8px;color:#d5eaff}
+nav{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:15px;background:#101e32;position:sticky;top:0;z-index:10}
+button{border:0;cursor:pointer;font-family:inherit}
+nav button{border-radius:30px;padding:11px 20px;color:white;background:#203957;transition:.3s}
+nav button.active,nav button:hover{background:#00a9e0}
+.container{max-width:1100px;padding:20px;margin:auto}
+.section{display:none;animation:masuk .4s}
+.section.active{display:block}
+@keyframes masuk{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+h2{margin-bottom:20px;color:#43c9ff}
+.hero{text-align:center;padding:65px 15px;background:linear-gradient(135deg,#153c60,#087caa);border-radius:25px;margin-top:10px}
+.hero h2{color:white;font-size:35px}
+.hero p{margin-top:12px}
+.box{background:#14243a;padding:20px;border-radius:20px;margin-bottom:20px;border:1px solid #263e59}
+.structure{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+.position{background:#203957;padding:20px;text-align:center;border-radius:20px;transition:.3s}
+.position:hover{transform:translateY(-5px);background:#245078}
+.position h3{color:#43c9ff;margin-bottom:8px}
+.search,.field{width:100%;padding:14px;border-radius:15px;border:1px solid #385474;background:#14243a;color:white;outline:none;margin-bottom:12px}
+.students{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:15px}
+.student{background:#14243a;padding:18px 10px;text-align:center;border-radius:20px;border:1px solid #263e59;transition:.3s;overflow:hidden}
+.student:hover{transform:translateY(-5px);box-shadow:0 8px 25px #0005}
+.photo{width:100px;height:100px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;border:4px solid #36bfff;background:#29435e}
+.student-name{font-weight:bold;margin-bottom:12px;overflow-wrap:anywhere}
+.action{border-radius:30px;padding:9px 13px;margin:3px;background:#087eae;color:white;transition:.3s}
+.action:hover{background:#00b8ee}
+.danger{background:#a93649}
+.primary{background:#00a5dc;color:white;border-radius:12px;padding:12px 18px;margin:4px 2px}
+.secondary{background:#203957;color:white;border-radius:12px;padding:12px 18px;margin:4px 2px}
+.status{padding:12px;background:#203957;border-radius:12px;margin:12px 0;font-size:13px;overflow-wrap:anywhere}
+.admin-panel{display:none}
+.admin-panel.show{display:block}
+footer{text-align:center;padding:25px;color:#8da9c5}
+.small{font-size:12px;color:#9db5cc;margin-top:8px}
+#loading{text-align:center;padding:20px;color:#43c9ff}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>KELAS 8.1</h1>
+<p>Website Resmi Kelas 8.1</p>
+</header>
+
+<nav>
+<button class="active" onclick="halaman('home',this)">Home</button>
+<button onclick="halaman('struktur',this)">Struktur</button>
+<button onclick="halaman('anggota',this)">Anggota</button>
+</nav>
+
+<div class="container">
+
+<section id="home" class="section active">
+<div class="hero">
+<h2>WELCOME TO 8.1</h2>
+<p>Solid, Kompak, dan Berprestasi</p>
+</div>
+<div class="box" style="margin-top:20px;text-align:center">
+<h2>KELAS 8.1</h2>
+<p>Jumlah anggota: <span id="jumlahHome">42</span> siswa</p>
+<p>Selamat datang di website kelas kami!</p>
+</div>
+<div class="box">
+<h2>Status Website</h2>
+<div class="status" id="status">Menghubungkan ke database...</div>
+</div>
+</section>
+
+<section id="struktur" class="section">
+<h2>STRUKTUR KELAS</h2>
+<div class="structure">
+<div class="position"><h3>Ketua Kelas</h3><p>Kheynara</p></div>
+<div class="position"><h3>Wakil Ketua</h3><p>Bagus</p></div>
+<div class="position"><h3>Sekretaris 1</h3><p>Ica</p></div>
+<div class="position"><h3>Sekretaris 2</h3><p>Citra</p></div>
+<div class="position"><h3>Bendahara 1</h3><p>Nabilla</p></div>
+<div class="position"><h3>Bendahara 2</h3><p>Meita</p></div>
+</div>
+</section>
+
+<section id="anggota" class="section">
+<h2>ANGGOTA KELAS 8.1</h2>
+
+<input id="cari" class="search"
+placeholder="Cari nama siswa..." oninput="tampil()">
+
+<div class="box">
+<h3 style="color:#43c9ff;margin-bottom:12px">Panel Admin</h3>
+
+<button class="secondary" onclick="bukaLogin()" id="loginButton">
+Login Admin
+</button>
+
+<button class="secondary" onclick="logout()" id="logoutButton" style="display:none">
+Logout
+</button>
+
+<div id="loginForm" style="display:none;margin-top:15px">
+<input id="email" class="field" type="email" placeholder="Email admin">
+<input id="password" class="field" type="password" placeholder="Password admin">
+<button class="primary" onclick="login()">Masuk</button>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+<div class="status">Mode admin aktif.</div>
+<input id="namaBaru" class="field" placeholder="Masukkan nama siswa baru">
+<button class="primary" onclick="tambahSiswa()">+ Tambah Siswa</button>
+<button class="secondary" onclick="isiAwal()">Isi 42 siswa awal</button>
+</div>
+
+<div class="small">
+Pengunjung dapat melihat anggota. Hanya admin yang dapat mengedit.
+</div>
+</div>
+
+<div id="loading">Memuat anggota...</div>
+<div class="students" id="daftar"></div>
+</section>
+
+</div>
+
+<footer>© 2026 KELAS 8.1</footer>
+
+<script>
+
+/* KONFIGURASI */
+
+const SUPABASE_URL="https://gsudzlkampjymblukvfy.supabase.co";
+
+const SUPABASE_KEY="sb_publishable_c26HjgcP3HDKVhoLDG79OQ_ZZ6s3s5A";
+
+const BUCKET="foto-siswa";
+
+/* MASUKKAN UID ADMIN ASLI DI SINI */
+const ADMIN_UID="f78c20f6-4e84-4956-82b8-084be8c23f08";
+
+const db=window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let siswa=[];
+let session=null;
+let admin=false;
+
+/* NAVIGASI */
+
+function halaman(id,tombol){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+tombol.classList.add("active");
+}
+
+/* STATUS */
+
+function pesan(teks){
+document.getElementById("status").textContent=teks;
+}
+
+function errorPesan(error){
+console.error(error);
+alert("Terjadi kesalahan: "+(error.message||"Periksa Supabase."));
+}
+
+/* LOGIN */
+
+function bukaLogin(){
+document.getElementById("loginForm").style.display="block";
+}
+
+async function login(){
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+
+if(!email||!password){
+alert("Masukkan email dan password.");
+return;
+}
+
+const {data,error}=await db.auth.signInWithPassword({
+email,password
+});
+
+if(error)return errorPesan(error);
+
+session=data.session;
+periksaAdmin();
+}
+
+/* LOGOUT */
+
+async function logout(){
+const {error}=await db.auth.signOut();
+if(error)return errorPesan(error);
+
+session=null;
+admin=false;
+periksaAdmin();
+}
+
+/* CEK ADMIN */
+
+function periksaAdmin(){
+
+admin=!!session &&
+ADMIN_UID!=="ISI_UID_ADMIN_DI_SINI" &&
+session.user.id===ADMIN_UID;
+
+document.getElementById("loginForm").style.display="none";
+
+document.getElementById("loginButton").style.display=
+session?"none":"inline-block";
+
+document.getElementById("logoutButton").style.display=
+session?"inline-block":"none";
+
+document.getElementById("adminPanel").classList.toggle("show",admin);
+
+if(session&&!admin){
+pesan("Login berhasil, tetapi UID akun tidak cocok dengan UID admin.");
+}else if(admin){
+pesan("Admin berhasil login.");
+}else{
+pesan("Website aktif. Mode pengunjung.");
+}
+
+tampil();
+}
+
+/* AMBIL DATA */
+
+async function muatData(){
+
+document.getElementById("loading").style.display="block";
+
+const {data,error}=await db
+.from("siswa")
+.select("*")
+.order("urutan",{ascending:true})
+.order("id",{ascending:true});
+
+document.getElementById("loading").style.display="none";
+
+if(error){
+pesan("Gagal mengambil data: "+error.message);
+console.error(error);
+return;
+}
+
+siswa=data||[];
+tampil();
+
+document.getElementById("jumlahHome").textContent=siswa.length;
+
+}
+
+/* FOTO */
+
+function urlFoto(path){
+if(!path)return "";
+const {data}=db.storage.from(BUCKET).getPublicUrl(path);
+return data.publicUrl;
+}
+
+async function kompresFoto(file){
+
+return new Promise((resolve,reject)=>{
+
+const img=new Image();
+const reader=new FileReader();
+
+reader.onload=e=>{
+
+img.onload=()=>{
+
+const canvas=document.createElement("canvas");
+const ukuran=500;
+
+canvas.width=ukuran;
+canvas.height=ukuran;
+
+const sisi=Math.min(img.width,img.height);
+const x=(img.width-sisi)/2;
+const y=(img.height-sisi)/2;
+
+const ctx=canvas.getContext("2d");
+
+ctx.drawImage(
+img,x,y,sisi,sisi,
+0,0,ukuran,ukuran
+);
+
+canvas.toBlob(blob=>{
+if(blob)resolve(blob);
+else reject(new Error("Foto gagal diproses."));
+},"image/jpeg",0.78);
+
+};
+
+img.onerror=()=>reject(new Error("Foto tidak bisa dibuka."));
+img.src=e.target.result;
+
+};
+
+reader.onerror=()=>reject(new Error("Gagal membaca foto."));
+reader.readAsDataURL(file);
+
+});
+
+}
+
+/* TAMBAH / GANTI FOTO */
+
+async function uploadFoto(id,file){
+
+if(!admin){
+alert("Hanya admin yang boleh upload foto.");
+return;
+}
+
+if(!file||!file.type.startsWith("image/")){
+alert("Pilih foto dari galeri.");
+return;
+}
+
+if(file.size>8*1024*1024){
+alert("Ukuran foto maksimal 8 MB.");
+return;
+}
+
+try{
+
+pesan("Mengunggah foto...");
+
+const blob=await kompresFoto(file);
+const path=id+"/"+Date.now()+".jpg";
+
+const {error:uploadError}=await db.storage
+.from(BUCKET)
+.upload(path,blob,{
+contentType:"image/jpeg",
+upsert:false
+});
+
+if(uploadError)throw uploadError;
+
+const {data:oldData,error:readError}=await db
+.from("siswa")
+.select("foto_path")
+.eq("id",id)
+.single();
+
+if(readError){
+await db.storage.from(BUCKET).remove([path]);
+throw readError;
+}
+
+const {error:updateError}=await db
+.from("siswa")
+.update({foto_path:path})
+.eq("id",id);
+
+if(updateError){
+await db.storage.from(BUCKET).remove([path]);
+throw updateError;
+}
+
+if(oldData&&oldData.foto_path){
+const {error:removeError}=await db.storage
+.from(BUCKET)
+.remove([oldData.foto_path]);
+
+if(removeError)console.error(removeError);
+}
+
+await muatData();
+
+pesan("Foto berhasil disimpan!");
+alert("Foto berhasil ditambahkan!");
+
+}catch(error){
+errorPesan(error);
+}
+
+}
+
+/* TAMBAH SISWA */
+
+async function tambahSiswa(){
+
+if(!admin)return alert("Login admin terlebih dahulu.");
+
+const input=document.getElementById("namaBaru");
+const nama=input.value.trim();
+
+if(!nama)return alert("Masukkan nama siswa.");
+
+const {error}=await db.from("siswa").insert({
+nama:nama,
+foto_path:null,
+urutan:siswa.length+1
+});
+
+if(error)return errorPesan(error);
+
+input.value="";
+await muatData();
+
+}
+
+/* ISI 42 SISWA */
+
+async function isiAwal(){
+
+if(!admin)return;
+
+if(siswa.length>0){
+alert("Data siswa sudah tersedia.");
+return;
+}
+
+if(!confirm("Buat 42 data siswa awal?"))return;
+
+const data=[];
+
+for(let i=1;i<=42;i++){
+data.push({
+nama:"Siswa "+i,
+urutan:i,
+foto_path:null
+});
+}
+
+const {error}=await db.from("siswa").insert(data);
+
+if(error)return errorPesan(error);
+
+await muatData();
+
+}
+
+/* EDIT NAMA */
+
+async function editNama(id){
+
+if(!admin)return;
+
+const item=siswa.find(s=>s.id===id);
+if(!item)return;
+
+const nama=prompt("Edit nama siswa:",item.nama);
+
+if(!nama||!nama.trim())return;
+
+const {error}=await db
+.from("siswa")
+.update({nama:nama.trim()})
+.eq("id",id);
+
+if(error)return errorPesan(error);
+
+await muatData();
+
+}
+
+/* HAPUS SISWA */
+
+async function hapusSiswa(id){
+
+if(!admin)return;
+
+if(!confirm("Yakin ingin menghapus siswa ini?"))return;
+
+const item=siswa.find(s=>s.id===id);
+
+const {error}=await db
+.from("siswa")
+.delete()
+.eq("id",id);
+
+if(error)return errorPesan(error);
+
+if(item&&item.foto_path){
+const {error:fotoError}=await db.storage
+.from(BUCKET)
+.remove([item.foto_path]);
+
+if(fotoError)console.error(fotoError);
+}
+
+await muatData();
+
+}
+
+/* TAMPILKAN ANGGOTA */
+
+function tampil(){
+
+const area=document.getElementById("daftar");
+const cari=document.getElementById("cari").value.toLowerCase();
+
+area.innerHTML="";
+
+siswa.forEach(s=>{
+
+if(!s.nama.toLowerCase().includes(cari))return;
+
+const card=document.createElement("div");
+card.className="student";
+
+const foto=document.createElement("img");
+foto.className="photo";
+foto.alt="Foto "+s.nama;
+
+foto.src=s.foto_path
+?urlFoto(s.foto_path)
+:"data:image/svg+xml,"+encodeURIComponent(
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#29435e"/><circle cx="50" cy="37" r="17" fill="#b9d9ef"/><path d="M15 100 Q15 60 50 60 Q85 60 85 100" fill="#b9d9ef"/></svg>'
+);
+
+foto.onerror=()=>{
+foto.src="data:image/svg+xml,"+encodeURIComponent(
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#29435e"/></svg>'
+);
+};
+
+const nama=document.createElement("div");
+nama.className="student-name";
+nama.textContent=s.nama;
+
+card.append(foto,nama);
+
+if(admin){
+
+const edit=document.createElement("button");
+edit.className="action";
+edit.textContent="Edit Nama";
+edit.onclick=()=>editNama(s.id);
+
+/* INPUT GALERI HP */
+
+const input=document.createElement("input");
+input.type="file";
+input.accept="image/*";
+input.hidden=true;
+
+input.onchange=async()=>{
+if(input.files&&input.files[0]){
+await uploadFoto(s.id,input.files[0]);
+input.value="";
+}
+};
+
+/* TOMBOL TAMBAH / GANTI FOTO */
+
+const ganti=document.createElement("button");
+ganti.className="action";
+ganti.textContent=s.foto_path?"Ganti Foto":"+ Tambah Foto";
+ganti.onclick=()=>input.click();
+
+const hapus=document.createElement("button");
+hapus.className="action danger";
+hapus.textContent="Hapus";
+hapus.onclick=()=>hapusSiswa(s.id);
+
+card.append(edit,ganti,input,hapus);
+
+}
+
+area.appendChild(card);
+
+});
+
+document.getElementById("jumlahHome").textContent=siswa.length;
+
+}
+
+/* MULAI */
+
+async function mulai(){
+
+try{
+
+const {data,error}=await db.auth.getSession();
+
+if(error)throw error;
+
+session=data.session;
+periksaAdmin();
+
+await muatData();
+
+db.auth.onAuthStateChange((_event,newSession)=>{
+
+session=newSession;
+periksaAdmin();
+
+setTimeout(muatData,100);
+
+});
+
+setInterval(muatData,15000);
+
+}catch(error){
+
+pesan("Gagal menghubungkan: "+error.message);
+console.error(error);
+
+}
+
+}
+
+mulai();
+
+</script>
+</body>
+</html>
