@@ -1,0 +1,717 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KELAS 8.1</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Arial,sans-serif;background:#0b1424;color:white}
+header{text-align:center;padding:25px 15px;background:linear-gradient(135deg,#142b49,#087caa)}
+header h1{font-size:30px;letter-spacing:2px}
+header p{margin-top:8px;color:#d5eaff}
+nav{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:15px;background:#101e32;position:sticky;top:0;z-index:10}
+button{border:0;cursor:pointer;font-family:inherit}
+nav button{border-radius:30px;padding:11px 20px;color:white;background:#203957}
+nav button.active,nav button:hover{background:#00a9e0}
+.container{max-width:1100px;padding:20px;margin:auto}
+.section{display:none;animation:masuk .4s}
+.section.active{display:block}
+@keyframes masuk{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+h2{margin-bottom:20px;color:#43c9ff}
+.hero{text-align:center;padding:40px 15px;background:linear-gradient(135deg,#153c60,#087caa);border-radius:25px;margin-top:10px}
+.hero h2{color:white;font-size:35px}
+.hero p{margin-top:12px}
+#holoBox{position:relative;width:100%;height:340px;margin:20px 0;border-radius:22px;overflow:hidden;border:1px solid #236b9b;background:radial-gradient(ellipse at center,#102b50 0%,#030a18 70%,#01030b 100%);box-shadow:0 0 30px #008cff22}
+#holoCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+#holoInfo{position:absolute;top:12px;left:12px;z-index:3;background:#07172cdd;border:1px solid #2673a0;border-radius:10px;padding:10px 13px;font-size:12px;line-height:1.7;pointer-events:none}
+#holoStatus{color:#5deaff}
+#holoName{color:#ffda7b;font-weight:bold}
+#cameraButton{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 22px;border-radius:30px;background:#008fc9;color:white;border:1px solid #65e5ff;font-weight:bold;box-shadow:0 0 20px #00aaff66}
+#video{position:absolute;right:10px;bottom:10px;width:85px;opacity:.25;transform:scaleX(-1);border-radius:8px;z-index:4}
+.holo-help{text-align:center;color:#a9c8e7;font-size:12px;padding:0 10px 15px;line-height:1.8}
+.box{background:#14243a;padding:20px;border-radius:20px;margin-bottom:20px;border:1px solid #263e59}
+.structure{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+.position{background:#203957;padding:20px;text-align:center;border-radius:20px;transition:.3s}
+.position:hover{transform:translateY(-5px);background:#245078}
+.position h3{color:#43c9ff;margin-bottom:8px}
+.search,.field{width:100%;padding:14px;border-radius:15px;border:1px solid #385474;background:#14243a;color:white;outline:none;margin-bottom:12px}
+.students{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:15px}
+.student{background:#14243a;padding:18px 10px;text-align:center;border-radius:20px;border:1px solid #263e59;transition:.3s;overflow:hidden}
+.student:hover{transform:translateY(-5px);box-shadow:0 8px 25px #0005}
+.photo{width:100px;height:100px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;border:4px solid #36bfff;background:#29435e}
+.student-name{font-weight:bold;margin-bottom:12px;overflow-wrap:anywhere}
+.action{border-radius:30px;padding:9px 13px;margin:3px;background:#087eae;color:white}
+.action:hover{background:#00b8ee}
+.danger{background:#a93649}
+.primary{background:#00a5dc;color:white;border-radius:12px;padding:12px 18px;margin:4px 2px}
+.secondary{background:#203957;color:white;border-radius:12px;padding:12px 18px;margin:4px 2px}
+.status{padding:12px;background:#203957;border-radius:12px;margin:12px 0;font-size:13px;overflow-wrap:anywhere}
+.admin-panel{display:none}
+.admin-panel.show{display:block}
+footer{text-align:center;padding:25px;color:#8da9c5}
+.small{font-size:12px;color:#9db5cc;margin-top:8px}
+.instagram{display:inline-block;background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);color:white;padding:13px 25px;border-radius:30px;text-decoration:none;font-weight:bold}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.memory{background:#14243a;border:1px solid #263e59;border-radius:17px;overflow:hidden;transition:.3s}
+.memory:hover{transform:translateY(-5px)}
+.memory img{width:100%;height:180px;object-fit:cover;display:block}
+.memory-info{padding:13px}
+.memory-title{font-weight:bold;overflow-wrap:anywhere;margin-bottom:10px}
+.empty{text-align:center;padding:35px;color:#9db5cc;background:#14243a;border-radius:15px;grid-column:1/-1}
+@media(max-width:600px){#holoBox{height:300px}.hero h2{font-size:27px}header h1{font-size:26px}}
+</style>
+</head>
+
+<body>
+<header>
+<h1>KELAS 8.1</h1>
+<p>Website Resmi Kelas 8.1</p>
+</header>
+
+<nav>
+<button class="active" onclick="halaman('home',this)">Home</button>
+<button onclick="halaman('struktur',this)">Struktur</button>
+<button onclick="halaman('anggota',this)">Anggota</button>
+<button onclick="halaman('kenangan',this)">Galeri Kenangan</button>
+</nav>
+
+<div class="container">
+
+<section id="home" class="section active">
+<div class="hero">
+<h2>WELCOME TO 8.1</h2>
+<p>Solid, Kompak, dan Berprestasi</p>
+</div>
+
+<div id="holoBox">
+<div id="holoInfo">
+<b>3D HOLOGRAM KELAS 8.1</b><br>
+<span id="holoStatus">PARTIKEL AKTIF</span><br>
+<span id="holoName">SELAMAT DATANG</span>
+</div>
+<button id="cameraButton" onclick="aktifkanKamera()">AKTIFKAN KAMERA</button>
+<video id="video" autoplay playsinline muted></video>
+</div>
+
+<div class="holo-help">
+✊ SELAMAT DATANG · ☝️ DI WEBSITE KELAS 8.1<br>
+Tiga jari: WALI KELAS · Empat jari: BU CACA<br>
+Tangan tidak terdeteksi: partikel menyebar dan berputar
+</div>
+
+<div class="box" style="margin-top:20px;text-align:center">
+<h2>KELAS 8.1</h2>
+<p>Jumlah anggota: <span id="jumlahHome">42</span> siswa</p>
+<p style="margin-top:10px">Selamat datang di website kelas kami!</p>
+</div>
+
+<div class="box" style="text-align:center">
+<h2>INSTAGRAM KELAS 8.1</h2>
+<p style="margin-bottom:18px">Ikuti keseruan dan kenangan kelas 8.1!</p>
+<a class="instagram" href="https://www.instagram.com/eightonegariskeras?mdxt=bHc1eGhwanY2OTQ4" target="_blank" rel="noopener noreferrer">📸 Instagram Kelas 8.1</a>
+</div>
+
+<div class="box">
+<h2>Status Website</h2>
+<div class="status" id="status">Menghubungkan ke database...</div>
+</div>
+</section>
+
+<section id="struktur" class="section">
+<h2>STRUKTUR KELAS</h2>
+<div class="structure">
+<div class="position"><h3>Wali kelas</h3><p>Bu Caca</p></div>
+<div class="position"><h3>Ketua Kelas</h3><p>Kheynara</p></div>
+<div class="position"><h3>Wakil Ketua</h3><p>Bagus</p></div>
+<div class="position"><h3>Sekretaris 1</h3><p>Ica</p></div>
+<div class="position"><h3>Sekretaris 2</h3><p>Citra</p></div>
+<div class="position"><h3>Bendahara 1</h3><p>Nabilla</p></div>
+<div class="position"><h3>Bendahara 2</h3><p>Meita</p></div>
+</div>
+</section>
+
+<section id="anggota" class="section">
+<h2>ANGGOTA KELAS 8.1</h2>
+<input id="cari" class="search" placeholder="Cari nama siswa..." oninput="tampil()">
+<div class="box">
+<h3 style="color:#43c9ff;margin-bottom:12px">Panel Admin</h3>
+<button class="secondary" onclick="bukaLogin()" id="loginButton">Login Admin</button>
+<button class="secondary" onclick="logout()" id="logoutButton" style="display:none">Logout</button>
+<div id="loginForm" style="display:none;margin-top:15px">
+<input id="email" class="field" type="email" placeholder="Email admin">
+<input id="password" class="field" type="password" placeholder="Password admin">
+<button class="primary" onclick="login()">Masuk</button>
+</div>
+<div class="admin-panel" id="adminPanel">
+<div class="status">Mode admin aktif.</div>
+<input id="namaBaru" class="field" placeholder="Masukkan nama siswa baru">
+<button class="primary" onclick="tambahSiswa()">+ Tambah Siswa</button>
+<button class="secondary" onclick="isiAwal()">Isi 42 siswa awal</button>
+</div>
+<div class="small">Pengunjung dapat melihat anggota. Hanya admin yang dapat mengedit.</div>
+</div>
+<div id="loading">Memuat anggota...</div>
+<div class="students" id="daftar"></div>
+</section>
+
+<section id="kenangan" class="section">
+<h2>GALERI KENANGAN 8.1</h2>
+<div class="box">
+<p style="color:#b9d9ef;margin-bottom:15px">Kumpulan momen indah dan kenangan kelas 8.1.</p>
+<div id="adminGaleri" style="display:none">
+<input id="judulKenangan" class="field" placeholder="Judul kenangan...">
+<input id="fotoKenangan" class="field" type="file" accept="image/*">
+<button class="primary" onclick="tambahKenangan()">+ Tambah Kenangan</button>
+</div>
+<div class="small">Foto kenangan dapat dilihat oleh semua pengunjung.</div>
+</div>
+<div id="loadingKenangan" class="status">Memuat galeri kenangan...</div>
+<div class="gallery" id="daftarKenangan"></div>
+</section>
+</div>
+
+<footer>© 2026 KELAS 8.1</footer>
+
+<script>
+/* ===== HOLOGRAM PARTIKEL ===== */
+const holoBox=document.getElementById("holoBox");
+const video=document.getElementById("video");
+const holoStatus=document.getElementById("holoStatus");
+const holoName=document.getElementById("holoName");
+const cameraButton=document.getElementById("cameraButton");
+
+const scene=new THREE.Scene();
+const holoCamera=new THREE.PerspectiveCamera(45,1,.1,1000);
+holoCamera.position.z=10;
+
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.domElement.id="holoCanvas";
+holoBox.insertBefore(renderer.domElement,holoBox.firstChild);
+
+const root=new THREE.Group();
+scene.add(root);
+
+const COUNT=8500;
+const positions=new Float32Array(COUNT*3);
+const target=new Float32Array(COUNT*3);
+const colors=new Float32Array(COUNT*3);
+const scatterTarget=new Float32Array(COUNT*3);
+
+const geometry=new THREE.BufferGeometry();
+geometry.setAttribute("position",new THREE.BufferAttribute(positions,3));
+geometry.setAttribute("color",new THREE.BufferAttribute(colors,3));
+
+const material=new THREE.PointsMaterial({
+size:.065,vertexColors:true,transparent:true,
+opacity:1,blending:THREE.AdditiveBlending,depthWrite:false
+});
+
+root.add(new THREE.Points(geometry,material));
+
+function random(a,b){return a+Math.random()*(b-a)}
+
+const palettes={
+welcome:[.25,.85,1],
+website:[.25,.55,1],
+teacher:[1,.45,.85],
+caca:[1,.8,.25]
+};
+
+const shapes={
+welcome:{lines:["SELAMAT","DATANG"],name:"SELAMAT DATANG",type:"welcome"},
+website:{lines:["DI WEBSITE","KELAS 8.1"],name:"DI WEBSITE KELAS 8.1",type:"website"},
+teacher:{lines:["WALI KELAS"],name:"WALI KELAS",type:"teacher"},
+caca:{lines:["BU CACA"],name:"BU CACA",type:"caca"}
+};
+
+let current="";
+let isScattered=false;
+let lastGesture="";
+let targetX=0,targetY=0;
+let handLost=false;
+
+function buildText(lines,type){
+const canvas=document.createElement("canvas");
+canvas.width=1400;canvas.height=500;
+const ctx=canvas.getContext("2d");
+ctx.clearRect(0,0,1400,500);
+ctx.fillStyle="#fff";
+ctx.textAlign="center";ctx.textBaseline="middle";
+
+if(lines.length===1){
+ctx.font="bold 125px Arial";
+ctx.fillText(lines[0],700,250,1350);
+}else{
+ctx.font="bold 115px Arial";
+ctx.fillText(lines[0],700,175,1350);
+ctx.fillText(lines[1],700,325,1350);
+}
+
+const data=ctx.getImageData(0,0,1400,500).data;
+const points=[];
+
+for(let y=0;y<500;y+=3){
+for(let x=0;x<1400;x+=3){
+if(data[(y*1400+x)*4+3]>100){
+points.push({x:(x-700)/85,y:(250-y)/85,z:random(-.25,.25)});
+}
+}
+}
+
+if(!points.length)return;
+const color=palettes[type];
+
+for(let i=0;i<COUNT;i++){
+const p=points[Math.floor(Math.random()*points.length)];
+target[i*3]=p.x+random(-.018,.018);
+target[i*3+1]=p.y+random(-.018,.018);
+target[i*3+2]=p.z;
+colors[i*3]=color[0];
+colors[i*3+1]=color[1];
+colors[i*3+2]=color[2];
+}
+geometry.attributes.color.needsUpdate=true;
+isScattered=false;
+}
+
+function build(type){
+if(current===type&&!isScattered)return;
+current=type;
+isScattered=false;
+buildText(shapes[type].lines,shapes[type].type);
+holoName.textContent=shapes[type].name;
+root.rotation.set(0,0,0);
+}
+
+function scatterParticles(){
+if(isScattered)return;
+isScattered=true;
+
+for(let i=0;i<COUNT;i++){
+const u=random(-1,1);
+const angle=random(0,Math.PI*2);
+const q=Math.sqrt(1-u*u);
+const radius=random(3,6.5);
+scatterTarget[i*3]=radius*q*Math.cos(angle);
+scatterTarget[i*3+1]=radius*u;
+scatterTarget[i*3+2]=radius*q*Math.sin(angle);
+colors[i*3]=.2;
+colors[i*3+1]=.7;
+colors[i*3+2]=1;
+}
+geometry.attributes.color.needsUpdate=true;
+holoName.textContent="PARTIKEL MENYEBAR";
+}
+
+build("welcome");
+for(let i=0;i<COUNT;i++){
+positions[i*3]=target[i*3];
+positions[i*3+1]=target[i*3+1];
+positions[i*3+2]=target[i*3+2];
+}
+geometry.attributes.position.needsUpdate=true;
+
+function resizeHologram(){
+const w=holoBox.clientWidth,h=holoBox.clientHeight;
+if(!w||!h)return;
+renderer.setSize(w,h,false);
+holoCamera.aspect=w/h;
+holoCamera.updateProjectionMatrix();
+}
+resizeHologram();
+window.addEventListener("resize",resizeHologram);
+
+/* MEDIAPIPE */
+const detector=new Hands({
+locateFile:file=>"https://cdn.jsdelivr.net/npm/@mediapipe/hands/"+file
+});
+detector.setOptions({
+maxNumHands:1,modelComplexity:1,
+minDetectionConfidence:.65,minTrackingConfidence:.65
+});
+
+function processHand(lm){
+const pairs=[[8,6],[12,10],[16,14],[20,18]];
+const fingers=pairs.map(f=>lm[f[0]].y<lm[f[1]].y-.02);
+const count=fingers.filter(Boolean).length;
+
+targetX=(.5-lm[9].x)*1.1;
+targetY=(.5-lm[9].y)*.7;
+
+let type=null;
+if(count===0)type="welcome";
+else if(fingers[0]&&!fingers[1]&&!fingers[2]&&!fingers[3])type="website";
+else if(count===3)type="teacher";
+else if(count===4)type="caca";
+
+if(type){
+handLost=false;
+if(type!==lastGesture){
+lastGesture=type;
+build(type);
+}
+holoStatus.textContent="TANGAN TERDETEKSI";
+}
+}
+
+detector.onResults(results=>{
+if(results.multiHandLandmarks&&results.multiHandLandmarks.length){
+handLost=false;
+processHand(results.multiHandLandmarks[0]);
+}else{
+if(!handLost){
+handLost=true;
+lastGesture="";
+targetX=0;targetY=0;
+scatterParticles();
+}
+holoStatus.textContent="PARTIKEL MENYEBAR";
+}
+});
+
+let cameraStarted=false;
+let processing=false;
+
+async function aktifkanKamera(){
+if(cameraStarted)return;
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+holoStatus.textContent="KAMERA MEMERLUKAN HTTPS";
+return;
+}
+
+cameraButton.disabled=true;
+cameraButton.textContent="MEMBUKA KAMERA...";
+
+try{
+const stream=await navigator.mediaDevices.getUserMedia({
+audio:false,
+video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}
+});
+video.srcObject=stream;
+await video.play();
+
+cameraStarted=true;
+processing=true;
+cameraButton.style.display="none";
+holoStatus.textContent="KAMERA AKTIF";
+
+async function frame(){
+if(!processing)return;
+if(video.readyState>=2){
+try{await detector.send({image:video})}
+catch(e){console.error(e)}
+}
+requestAnimationFrame(frame);
+}
+frame();
+
+}catch(error){
+console.error(error);
+cameraButton.disabled=false;
+cameraButton.textContent="COBA LAGI";
+holoStatus.textContent="KAMERA GAGAL DIAKTIFKAN";
+}
+}
+
+let previousTime=performance.now();
+let scatterRotation=0;
+
+function animateHologram(now){
+requestAnimationFrame(animateHologram);
+const delta=Math.min((now-previousTime)/1000,.05);
+previousTime=now;
+const ease=1-Math.exp(-10*delta);
+const p=geometry.attributes.position.array;
+
+for(let i=0;i<COUNT;i++){
+const k=i*3;
+const tx=isScattered?scatterTarget[k]:target[k];
+const ty=isScattered?scatterTarget[k+1]:target[k+1];
+const tz=isScattered?scatterTarget[k+2]:target[k+2];
+p[k]+=(tx-p[k])*ease;
+p[k+1]+=(ty-p[k+1])*ease;
+p[k+2]+=(tz-p[k+2])*ease;
+}
+geometry.attributes.position.needsUpdate=true;
+
+if(isScattered){
+scatterRotation+=delta*.65;
+root.rotation.y=scatterRotation;
+root.rotation.x=Math.sin(scatterRotation*.5)*.18;
+}else{
+root.rotation.set(0,0,0);
+}
+root.position.x+=(targetX-root.position.x)*ease;
+root.position.y+=(targetY-root.position.y)*ease;
+renderer.render(scene,holoCamera);
+}
+requestAnimationFrame(animateHologram);
+
+/* ===== NAVIGASI ===== */
+function halaman(id,tombol){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+tombol.classList.add("active");
+if(id==="kenangan")muatKenangan();
+}
+
+/* ===== SUPABASE ===== */
+const SUPABASE_URL="https://gsudzlkampjymblukvfy.supabase.co";
+const SUPABASE_KEY="sb_publishable_c26HjgcP3HDKVhoLDG79OQ_ZZ6s3s5A";
+const BUCKET="foto-siswa";
+const ADMIN_UID="f78c20f6-4e84-4956-82b8-084be8c23f08";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let siswa=[],kenangan=[],session=null,admin=false;
+
+function pesan(teks){document.getElementById("status").textContent=teks}
+function errorPesan(error){console.error(error);alert("Terjadi kesalahan: "+(error.message||"Periksa Supabase."))}
+
+function bukaLogin(){document.getElementById("loginForm").style.display="block"}
+
+async function login(){
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+if(!email||!password)return alert("Masukkan email dan password.");
+const {data,error}=await db.auth.signInWithPassword({email,password});
+if(error)return errorPesan(error);
+session=data.session;
+periksaAdmin();
+}
+
+async function logout(){
+const {error}=await db.auth.signOut();
+if(error)return errorPesan(error);
+session=null;admin=false;periksaAdmin();
+}
+
+function periksaAdmin(){
+admin=!!session&&session.user.id===ADMIN_UID;
+document.getElementById("loginForm").style.display="none";
+document.getElementById("loginButton").style.display=session?"none":"inline-block";
+document.getElementById("logoutButton").style.display=session?"inline-block":"none";
+document.getElementById("adminPanel").classList.toggle("show",admin);
+document.getElementById("adminGaleri").style.display=admin?"block":"none";
+if(session&&!admin)pesan("Login berhasil, tetapi UID akun tidak cocok dengan UID admin.");
+else if(admin)pesan("Admin berhasil login.");
+else pesan("Website aktif. Mode pengunjung.");
+tampil();tampilKenangan();
+}
+
+async function muatData(){
+document.getElementById("loading").style.display="block";
+const {data,error}=await db.from("siswa").select("*").order("urutan",{ascending:true}).order("id",{ascending:true});
+document.getElementById("loading").style.display="none";
+if(error){pesan("Gagal mengambil data: "+error.message);console.error(error);return}
+siswa=data||[];
+tampil();
+document.getElementById("jumlahHome").textContent=siswa.length;
+}
+
+function urlFoto(path){
+if(!path)return "";
+return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+async function kompresFoto(file){
+return new Promise((resolve,reject)=>{
+const img=new Image(),reader=new FileReader();
+reader.onload=e=>{
+img.onload=()=>{
+const canvas=document.createElement("canvas"),ukuran=500;
+canvas.width=ukuran;canvas.height=ukuran;
+const sisi=Math.min(img.width,img.height);
+const x=(img.width-sisi)/2,y=(img.height-sisi)/2;
+canvas.getContext("2d").drawImage(img,x,y,sisi,sisi,0,0,ukuran,ukuran);
+canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Foto gagal diproses.")),"image/jpeg",.78);
+};
+img.onerror=()=>reject(new Error("Foto tidak bisa dibuka."));
+img.src=e.target.result;
+};
+reader.onerror=()=>reject(new Error("Gagal membaca foto."));
+reader.readAsDataURL(file);
+});
+}
+
+async function uploadFoto(id,file){
+if(!admin)return alert("Hanya admin yang boleh upload foto.");
+if(!file||!file.type.startsWith("image/"))return alert("Pilih foto dari galeri.");
+if(file.size>8*1024*1024)return alert("Ukuran foto maksimal 8 MB.");
+try{
+pesan("Mengunggah foto...");
+const blob=await kompresFoto(file);
+const path=id+"/"+Date.now()+".jpg";
+const {error:uploadError}=await db.storage.from(BUCKET).upload(path,blob,{contentType:"image/jpeg",upsert:false});
+if(uploadError)throw uploadError;
+const {data:oldData,error:readError}=await db.from("siswa").select("foto_path").eq("id",id).single();
+if(readError){await db.storage.from(BUCKET).remove([path]);throw readError}
+const {error:updateError}=await db.from("siswa").update({foto_path:path}).eq("id",id);
+if(updateError){await db.storage.from(BUCKET).remove([path]);throw updateError}
+if(oldData&&oldData.foto_path)await db.storage.from(BUCKET).remove([oldData.foto_path]);
+await muatData();pesan("Foto berhasil disimpan!");alert("Foto berhasil ditambahkan!");
+}catch(error){errorPesan(error)}
+}
+
+async function tambahSiswa(){
+if(!admin)return alert("Login admin terlebih dahulu.");
+const input=document.getElementById("namaBaru"),nama=input.value.trim();
+if(!nama)return alert("Masukkan nama siswa.");
+const {error}=await db.from("siswa").insert({nama,foto_path:null,urutan:siswa.length+1});
+if(error)return errorPesan(error);
+input.value="";await muatData();
+}
+
+async function isiAwal(){
+if(!admin)return;
+if(siswa.length>0)return alert("Data siswa sudah tersedia.");
+if(!confirm("Buat 42 data siswa awal?"))return;
+const data=[];
+for(let i=1;i<=42;i++)data.push({nama:"Siswa "+i,urutan:i,foto_path:null});
+const {error}=await db.from("siswa").insert(data);
+if(error)return errorPesan(error);
+await muatData();
+}
+
+async function editNama(id){
+if(!admin)return;
+const item=siswa.find(s=>s.id===id);
+if(!item)return;
+const nama=prompt("Edit nama siswa:",item.nama);
+if(!nama||!nama.trim())return;
+const {error}=await db.from("siswa").update({nama:nama.trim()}).eq("id",id);
+if(error)return errorPesan(error);
+await muatData();
+}
+
+async function hapusSiswa(id){
+if(!admin)return;
+if(!confirm("Yakin ingin menghapus siswa ini?"))return;
+const item=siswa.find(s=>s.id===id);
+const {error}=await db.from("siswa").delete().eq("id",id);
+if(error)return errorPesan(error);
+if(item&&item.foto_path)await db.storage.from(BUCKET).remove([item.foto_path]);
+await muatData();
+}
+
+function tampil(){
+const area=document.getElementById("daftar");
+const cari=document.getElementById("cari").value.toLowerCase();
+area.innerHTML="";
+siswa.forEach(s=>{
+if(!s.nama.toLowerCase().includes(cari))return;
+const card=document.createElement("div");card.className="student";
+const foto=document.createElement("img");foto.className="photo";foto.alt="Foto "+s.nama;
+foto.src=s.foto_path?urlFoto(s.foto_path):"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#29435e"/><circle cx="50" cy="37" r="17" fill="#b9d9ef"/><path d="M15 100 Q15 60 50 60 Q85 60 85 100" fill="#b9d9ef"/></svg>');
+foto.onerror=()=>{foto.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#29435e"/></svg>')};
+const nama=document.createElement("div");nama.className="student-name";nama.textContent=s.nama;
+card.append(foto,nama);
+if(admin){
+const edit=document.createElement("button");edit.className="action";edit.textContent="Edit Nama";edit.onclick=()=>editNama(s.id);
+const input=document.createElement("input");input.type="file";input.accept="image/*";input.hidden=true;
+input.onchange=async()=>{if(input.files&&input.files[0]){await uploadFoto(s.id,input.files[0]);input.value=""}};
+const ganti=document.createElement("button");ganti.className="action";ganti.textContent=s.foto_path?"Ganti Foto":"+ Tambah Foto";ganti.onclick=()=>input.click();
+const hapus=document.createElement("button");hapus.className="action danger";hapus.textContent="Hapus";hapus.onclick=()=>hapusSiswa(s.id);
+card.append(edit,ganti,input,hapus);
+}
+area.appendChild(card);
+});
+document.getElementById("jumlahHome").textContent=siswa.length;
+}
+
+/* ===== GALERI KENANGAN ===== */
+async function muatKenangan(){
+document.getElementById("loadingKenangan").style.display="block";
+const {data,error}=await db.from("kenangan").select("*").order("created_at",{ascending:false});
+document.getElementById("loadingKenangan").style.display="none";
+if(error){
+document.getElementById("daftarKenangan").innerHTML='<div class="empty">Gagal memuat galeri. Periksa tabel kenangan di Supabase.</div>';
+console.error(error);return;
+}
+kenangan=data||[];tampilKenangan();
+}
+
+function tampilKenangan(){
+const area=document.getElementById("daftarKenangan");
+if(!area)return;
+area.innerHTML="";
+if(kenangan.length===0){
+area.innerHTML='<div class="empty">Belum ada foto kenangan kelas 8.1.</div>';return;
+}
+kenangan.forEach(item=>{
+const card=document.createElement("div");card.className="memory";
+const foto=document.createElement("img");foto.src=urlFoto(item.foto_path);foto.alt=item.judul||"Kenangan kelas 8.1";
+const info=document.createElement("div");info.className="memory-info";
+const judul=document.createElement("div");judul.className="memory-title";judul.textContent=item.judul;
+info.appendChild(judul);
+if(admin){
+const hapus=document.createElement("button");hapus.className="action danger";hapus.textContent="Hapus Kenangan";hapus.onclick=()=>hapusKenangan(item.id);info.appendChild(hapus);
+}
+card.append(foto,info);area.appendChild(card);
+});
+}
+
+async function tambahKenangan(){
+if(!admin)return alert("Hanya admin yang bisa menambah kenangan.");
+const judul=document.getElementById("judulKenangan").value.trim();
+const input=document.getElementById("fotoKenangan"),file=input.files[0];
+if(!judul)return alert("Masukkan judul kenangan.");
+if(!file)return alert("Pilih foto terlebih dahulu.");
+if(!file.type.startsWith("image/"))return alert("File harus berupa gambar.");
+if(file.size>8*1024*1024)return alert("Ukuran foto maksimal 8 MB.");
+try{
+pesan("Mengunggah kenangan...");
+const blob=await kompresFoto(file);
+const path="kenangan/"+Date.now()+"_"+Math.random().toString(36).slice(2)+".jpg";
+const {error:uploadError}=await db.storage.from(BUCKET).upload(path,blob,{contentType:"image/jpeg",upsert:false});
+if(uploadError)throw uploadError;
+const {error:insertError}=await db.from("kenangan").insert({judul,foto_path:path});
+if(insertError){await db.storage.from(BUCKET).remove([path]);throw insertError}
+document.getElementById("judulKenangan").value="";input.value="";
+await muatKenangan();pesan("Kenangan berhasil disimpan!");alert("Foto kenangan berhasil ditambahkan!");
+}catch(error){errorPesan(error)}
+}
+
+async function hapusKenangan(id){
+if(!admin)return;
+if(!confirm("Yakin ingin menghapus kenangan ini?"))return;
+const item=kenangan.find(k=>k.id===id);if(!item)return;
+const {error}=await db.from("kenangan").delete().eq("id",id);
+if(error)return errorPesan(error);
+const {error:fotoError}=await db.storage.from(BUCKET).remove([item.foto_path]);
+if(fotoError)console.error(fotoError);
+await muatKenangan();alert("Kenangan berhasil dihapus!");
+}
+
+/* ===== MULAI WEBSITE ===== */
+async function mulai(){
+try{
+const {data,error}=await db.auth.getSession();
+if(error)throw error;
+session=data.session;
+periksaAdmin();
+await muatData();
+await muatKenangan();
+db.auth.onAuthStateChange((_event,newSession)=>{
+session=newSession;periksaAdmin();
+setTimeout(()=>{muatData();muatKenangan()},100);
+});
+setInterval(()=>{muatData();muatKenangan()},15000);
+}catch(error){
+pesan("Gagal menghubungkan: "+error.message);
+console.error(error);
+}
+}
+mulai();
+</script>
+</body>
+</html>
